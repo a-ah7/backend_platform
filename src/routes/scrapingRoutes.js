@@ -1,7 +1,7 @@
 const express = require("express");
 
 const {
-    startScraping
+  startScraping,
 } = require("../controllers/scrapingController");
 
 const router = express.Router();

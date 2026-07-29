@@ -1,11 +1,11 @@
 const express = require("express");
 
 const {
-  getHealth,
-} = require("../controllers/healthController");
+  saveScrapedData,
+} = require("../controllers/saveController");
 
 const router = express.Router();
 
-router.get("/", getHealth);
+router.post("/", saveScrapedData);
 
 module.exports = router;
