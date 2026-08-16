@@ -1,5 +1,5 @@
-const {
-  runPythonScraper,
+const { 
+  runPythonScraper 
 } = require("../services/pythonScraperService");
 
 function getFirstValue(singleValue, arrayValue) {

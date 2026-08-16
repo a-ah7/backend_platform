@@ -1,5 +1,9 @@
+const express = require("express");
 const { execFile } = require("node:child_process");
 const path = require("node:path");
+const cors = require('cors');
+const app = express();
+app.use(cors());
 
 function runPythonScraper(targetUrl) {
     return new Promise((resolve, reject) => {
