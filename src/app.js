@@ -17,4 +17,8 @@ app.use("/api/items", itemsRoutes);
 app.use("/api/scrape", scrapingRoutes);
 app.use("/api/save", saveRoutes);
 
+app.get('/', (req, res) => {
+  res.send('Server is running successfully!');
+});
+
 module.exports = app;
