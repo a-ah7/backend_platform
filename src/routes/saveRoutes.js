@@ -2,7 +2,7 @@ const express = require("express");
 
 const {
   saveScrapedData,
-} = require("../controllers/saveController");
+} = require("../controllers/SaveController");
 
 const router = express.Router();
 
