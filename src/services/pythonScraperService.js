@@ -67,11 +67,34 @@ const runPythonScraper = async (targetUrl) => {
       favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
     }
 
-    // 4. الكلمات المفتاحية (Keywords)
+    // 4. الكلمات المفتاحية (Keywords) مع استخراج تلقائي
+    let keywords = [];
     const keywordsMeta = $('meta[name="keywords"]').attr('content');
-    const keywords = keywordsMeta
-      ? keywordsMeta.split(',').map(k => k.trim()).filter(Boolean)
-      : [];
+
+    if (keywordsMeta) {
+      keywords = keywordsMeta.split(',').map(k => k.trim()).filter(Boolean);
+    } else {
+      const sampleText = (`${title} ${description} ` + $('h1, h2').text())
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, '');
+
+      const stopWords = new Set([
+        'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 
+        'is', 'are', 'was', 'were', 'be', 'this', 'that', 'from', 'as', 'it', 'your', 'you',
+        'no', 'found', 'title', 'description', 'official', 'site', 'online'
+      ]);
+
+      const wordCounts = {};
+      sampleText.split(/\s+/).forEach(word => {
+        if (word.length > 3 && !stopWords.has(word)) {
+          wordCounts[word] = (wordCounts[word] || 0) + 1;
+        }
+      });
+
+      keywords = Object.keys(wordCounts)
+        .sort((a, b) => wordCounts[b] - wordCounts[a])
+        .slice(0, 8);
+    }
 
     // 5. استخراج الإيميلات (Emails)
     const emailSet = new Set();
