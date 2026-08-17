@@ -1,53 +1,26 @@
-const express = require("express");
-const { execFile } = require("node:child_process");
-const path = require("node:path");
-const cors = require('cors');
-const app = express();
-app.use(cors());
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-function runPythonScraper(targetUrl) {
-    return new Promise((resolve, reject) => {
-        const scriptPath = path.join(
-            __dirname,
-            "../../python/scraper.py"
-        );
-
-        execFile(
-            "python",
-            [scriptPath, targetUrl],
-            {
-                windowsHide: true,
-                maxBuffer: 1024 * 1024
-            },
-            (error, stdout, stderr) => {
-                if (error) {
-                    return reject(
-                        new Error(stderr.trim() || error.message)
-                    );
-                }
-
-                try {
-                    const scrapedData = JSON.parse(stdout.trim());
-
-                    if (scrapedData.error) {
-                        return reject(
-                            new Error(scrapedData.error)
-                        );
-                    }
-
-                    resolve(scrapedData);
-                } catch {
-                    reject(
-                        new Error(
-                            "Python returned invalid JSON" + stdout
-                        )
-                    );
-                }
-            }
-        );
+const runPythonScraper = async (targetUrl) => {
+  try {
+    const { data } = await axios.get(targetUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
     });
-}
+    const $ = cheerio.load(data);
+
+    return {
+      title: $('title').text().trim() || 'No title found.',
+      description: $('meta[name="description"]').attr('content') || 'No description found.',
+      logo: $('link[rel="icon"]').attr('href') || $('img').first().attr('src') || 'No logo found.',
+      address: $('address').text().trim() || 'No address found.'
+    };
+  } catch (error) {
+    throw new Error('Failed to scrape website: ' + error.message);
+  }
+};
 
 module.exports = {
-    runPythonScraper
+  runPythonScraper
 };
