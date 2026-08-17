@@ -67,27 +67,31 @@ const runPythonScraper = async (targetUrl) => {
       favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
     }
 
-    // 4. الكلمات المفتاحية (Keywords) مع استخراج تلقائي
+    // 4. الكلمات المفتاحية (Keywords) مع فحص صارم
     let keywords = [];
     const keywordsMeta = $('meta[name="keywords"]').attr('content');
 
     if (keywordsMeta) {
       keywords = keywordsMeta.split(',').map(k => k.trim()).filter(Boolean);
-    } else {
-      const sampleText = (`${title} ${description} ` + $('h1, h2').text())
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, '');
+    }
+
+    // إذا لم تُجلب أية كلمات مفتاحية، يتم توليدها تلقائياً من محتوى الصفحة
+    if (keywords.length === 0) {
+      const textSource = `${title} ${description} ` + $('h1, h2, h3').text();
+      const cleanText = textSource.toLowerCase().replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, ' ');
 
       const stopWords = new Set([
         'the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 
         'is', 'are', 'was', 'were', 'be', 'this', 'that', 'from', 'as', 'it', 'your', 'you',
-        'no', 'found', 'title', 'description', 'official', 'site', 'online'
+        'no', 'found', 'title', 'description', 'official', 'site', 'online', 'home', 'page',
+        'https', 'http', 'com', 'www'
       ]);
 
       const wordCounts = {};
-      sampleText.split(/\s+/).forEach(word => {
-        if (word.length > 3 && !stopWords.has(word)) {
-          wordCounts[word] = (wordCounts[word] || 0) + 1;
+      cleanText.split(/\s+/).forEach(word => {
+        const cleanWord = word.trim();
+        if (cleanWord.length >= 3 && !stopWords.has(cleanWord)) {
+          wordCounts[cleanWord] = (wordCounts[cleanWord] || 0) + 1;
         }
       });
 
